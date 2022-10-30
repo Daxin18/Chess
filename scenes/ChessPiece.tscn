@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://source/ChessPiece.gd" type="Script" id=2]
+
+[node name="ChessPiece" type="Node2D"]
+z_index = 1
+script = ExtResource( 2 )
+
+[node name="piece_texture" type="TextureRect" parent="."]
+margin_right = 16.0
+margin_bottom = 16.0
+rect_min_size = Vector2( 16, 16 )
+mouse_filter = 2

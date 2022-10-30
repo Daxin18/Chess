@@ -1,0 +1,73 @@
+{
+     	"Pawn_black": {
+     	"color": "black",
+	"type": "pawn",
+	"texture": "black_pawn.png"
+	},
+	
+	"Pawn_white": {
+     	"color": "white",
+	"type": "pawn",
+	"texture": "white_pawn.png"
+	},
+
+	"Rook_white": {
+     	"color": "white",
+	"type": "rook",
+	"texture": "white_rook.png"
+	},
+
+	"Rook_black": {
+     	"color": "black",
+	"type": "rook",
+	"texture": "black_rook.png"
+	},
+
+	"Knight_black": {
+     	"color": "black",
+	"type": "knight",
+	"texture": "black_knight.png"
+	},
+
+	"Knight_white": {
+     	"color": "white",
+	"type": "knight",
+	"texture": "white_knight.png"
+	},
+
+	"Bishop_white": {
+     	"color": "white",
+	"type": "bishop",
+	"texture": "white_bishop.png"
+	},
+
+	"Bishop_black": {
+     	"color": "black",
+	"type": "bishop",
+	"texture": "black_bishop.png"
+	},
+
+	"Queen_black": {
+     	"color": "black",
+	"type": "queen",
+	"texture": "black_queen.png"
+	},
+
+	"Queen_white": {
+     	"color": "white",
+	"type": "queen",
+	"texture": "white_queen.png"
+	},
+
+	"King_white": {
+     	"color": "white",
+	"type": "king",
+	"texture": "white_king.png"
+	},
+
+	"King_black": {
+     	"color": "black",
+	"type": "king",
+	"texture": "black_king.png"
+	},
+}
