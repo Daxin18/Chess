@@ -127,7 +127,9 @@ func field_gui_input(event: InputEvent, field: FieldClass):
 		if event.button_index == BUTTON_LEFT && event.pressed:
 			if holding_piece != null:
 				if !field.piece: # Putting piece into field
-					if field.highlighted: #piece placed into highlighted field
+					if field.highlight_type == 3: #highlight type for castle-available fields
+						castle(field)
+					elif field.highlighted: #piece placed into highlighted field
 						place_piece(field)
 					else:	#piece placed into illegal field
 						snap_back()
@@ -137,6 +139,24 @@ func field_gui_input(event: InputEvent, field: FieldClass):
 					snap_back()
 			elif field.piece:
 				pickup_piece(field)
+
+#moves the king (holding_piece) to specified field and moves rook to the field next to it
+func castle(field):
+	#move rook
+	if field.id > holding_piece.getID():
+		for i in range(8):
+			var curr_field = field_table[field.id + i + 1]
+			if curr_field.piece:
+				curr_field.movePieceTo(field.id - 1)
+				break
+	else:
+		for i in range(8):
+			var curr_field = field_table[field.id - (i + 1)]
+			if curr_field.piece:
+				curr_field.movePieceTo(field.id + 1)
+				break
+	#move king
+	place_piece(field)
 
 # deletes the piece from a specified field and places holding_piece in its place
 func kill_piece(field):

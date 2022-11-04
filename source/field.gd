@@ -57,6 +57,21 @@ func checkCastlingForObstructions(f_id):
 				return false
 	return true
 
+# function that moves piece from field to field skipping the board part aka
+# adding and removing it as its child in order for it to follow the cursor
+func movePieceTo(f_id):
+	#placing into new field
+	var destination = board.field_table[f_id]
+	destination.piece = piece
+	destination.piece.updatePiecePosition(destination.col_row)
+	destination.piece.position = Vector2(0, 0)
+	destination.piece.doPawnTransform()
+	destination.add_child(piece)
+	#removing from old field
+	piece.was_moved = true
+	remove_child(piece)
+	piece = null
+
 # checks weather given field is connected to the current field with highlights that are not red
 func isConnectedTo(d_col_row):
 	var result = true
