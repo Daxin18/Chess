@@ -39,12 +39,11 @@ func castling():
 		var king_id = holding_piece.getID()
 		for i in rook_fields:
 			var field = field_table[i]
-			if !field.piece.was_moved:
-				if field.checkCastlingForObstructions(king_id):
-					if king_id < field.id:
-						field_table[king_id + 2].highlight(3)
-					else:
-						field_table[king_id - 2].highlight(3)
+			if !field.piece.was_moved && field.checkCastlingForObstructions(king_id):
+				if king_id < field.id:
+					field_table[king_id + 2].highlight(3)
+				else:
+					field_table[king_id - 2].highlight(3)
 
 # returns the array containing id of all the fields that has the specified piece on them
 func get_fields_containing(piece_type, piece_color):
@@ -179,7 +178,8 @@ func snap_back():
 # places the piece into specified field
 func place_piece(field):
 	field.putIntoField(holding_piece)
-	holding_piece.was_moved = true
+	if field.highlight_type != 1:
+		holding_piece.was_moved = true
 	holding_piece = null
 	off_highlights()
 

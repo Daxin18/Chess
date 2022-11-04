@@ -59,17 +59,18 @@ func checkCastlingForObstructions(f_id):
 
 # function that moves piece from field to field skipping the board part aka
 # adding and removing it as its child in order for it to follow the cursor
+# only used in automatic movement (such as castling)
 func movePieceTo(f_id):
 	#placing into new field
 	var destination = board.field_table[f_id]
 	destination.piece = piece
 	destination.piece.updatePiecePosition(destination.col_row)
 	destination.piece.position = Vector2(0, 0)
-	destination.piece.doPawnTransform()
+	remove_child(piece) # a node cant be a child of 2 nodes at once
+						# that caused the bug with rook being invisible
 	destination.add_child(piece)
 	#removing from old field
 	piece.was_moved = true
-	remove_child(piece)
 	piece = null
 
 # checks weather given field is connected to the current field with highlights that are not red
