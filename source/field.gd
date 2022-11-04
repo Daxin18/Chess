@@ -1,16 +1,17 @@
 extends TextureRect
 
 # holds all the values of highlights
-var HighlightTextures = [preload("res://textures/available_marker.png"),
+const HighlightTextures = [preload("res://textures/available_marker.png"),
 						preload("res://textures/current_marker.png"),
-						preload("res://textures/attack_marker.png")]
-var col_row = Vector2(0, 0) # fields posittion on the board (column, row)
+						preload("res://textures/attack_marker.png"),
+						preload("res://textures/castle_marker.png")]
+var col_row := Vector2(0, 0) # fields posittion on the board (column, row)
 var base_texture # basic texture that field goes back to after being un-highlighted
 var piece = null # piece that is occupying the field
-var highlighted = false # simple bool to check if field is highlighted (redundant, but shortens the code)
-var highlight_type = 100 # determines the type of a highlight, based on indexes in HighlightTextures
-var id = 0; # id of a field on the board (redundant, but its easier to access it directly rather than calculating it)
-var board # board in wich the field exists
+var highlighted := false # simple bool to check if field is highlighted (redundant, but shortens the code)
+var highlight_type := 100 # determines the type of a highlight, based on indexes in HighlightTextures
+var id := 0; # id of a field on the board (redundant, but its easier to access it directly rather than calculating it)
+var board # board in which the field exists
  
 func _ready():
 	highlighted = false
@@ -42,6 +43,19 @@ func offHighlight():
 	highlighted = false
 	texture = base_texture
 	highlight_type = 100
+
+# checks wheather there are no pieces between king and rook while castling
+# only use in castling function in board script
+func checkCastlingForObstructions(f_id):
+	if f_id < id:
+		for i in range(id - (f_id + 1)):
+			if board.field_table[id - (i + 1)].piece:
+				return false
+	else:
+		for i in range(f_id - (id + 1)):
+			if board.field_table[id + (i + 1)].piece:
+				return false
+	return true
 
 # checks weather given field is connected to the current field with highlights that are not red
 func isConnectedTo(d_col_row):

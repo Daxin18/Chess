@@ -1,14 +1,14 @@
 extends Node2D
 
 const FieldClass = preload("res://source/field.gd") # semi-needed for click detection function
-var FieldScene = preload("res://scenes/Field.tscn") # needed to make instances
-var ChessPiece = preload("res://scenes/ChessPiece.tscn") # needed to fill the fields with pieces
+const FieldScene = preload("res://scenes/Field.tscn") # needed to make instances
+const ChessPiece = preload("res://scenes/ChessPiece.tscn") # needed to fill the fields with pieces
 # needed to determine the texture of a field with smart math instead of typing it myself
-var FieldTextures = ["res://textures/black_field.png","res://textures/white_field.png"]
-export var highlights = [] # all the highlighted fields are stored there, for ease of un-highlighting them
+const FieldTextures = ["res://textures/black_field.png","res://textures/white_field.png"]
+export var highlights := [] # all the highlighted fields are stored there, for ease of un-highlighting them
 onready var board_fields = $GridContainer # you can access all the fields by calling .get_children
 # a table where index corresponds to id of a field, good if we want to reduce looping through all the fields
-export var field_table = []
+export var field_table := [] #array of all the fields on the board (by ID)
 var holding_piece = null # piece being held at the moment
 
 func _ready():
@@ -30,6 +30,30 @@ func highlight_fields():
 	check_collisions()
 	pawn_check()
 	check_collision_followup()
+	castling()
+
+# highlights fields for castling
+func castling():
+	if holding_piece.type == "king" && !holding_piece.was_moved:
+		var rook_fields = get_fields_containing("rook", holding_piece.color)
+		var king_id = holding_piece.getID()
+		for i in rook_fields:
+			var field = field_table[i]
+			if !field.piece.was_moved:
+				if field.checkCastlingForObstructions(king_id):
+					if king_id < field.id:
+						field_table[king_id + 2].highlight(3)
+					else:
+						field_table[king_id - 2].highlight(3)
+
+# returns the array containing id of all the fields that has the specified piece on them
+func get_fields_containing(piece_type, piece_color):
+	var result = []
+	for field in field_table:
+		if field.piece:
+			if field.piece.type == piece_type && field.piece.color == piece_color:
+				result.append(field.id)
+	return result
 
 # un-highlights all the fields in highlights, then clears the table
 func off_highlights():
@@ -120,6 +144,7 @@ func kill_piece(field):
 	field.piece.queue_free()
 	field.piece = null
 	field.putIntoField(holding_piece)
+	holding_piece.was_moved = true
 	remove_child(holding_piece)
 	holding_piece = null
 	off_highlights()
@@ -134,6 +159,7 @@ func snap_back():
 # places the piece into specified field
 func place_piece(field):
 	field.putIntoField(holding_piece)
+	holding_piece.was_moved = true
 	holding_piece = null
 	off_highlights()
 
@@ -145,6 +171,6 @@ func pickup_piece(field):
 	highlight_fields()
 
 # holding_piece actually follows a cursor, impressive
-func _input(event):
+func _input(_event):
 	if holding_piece:
 		holding_piece.global_position = get_global_mouse_position() - Vector2(8,8)

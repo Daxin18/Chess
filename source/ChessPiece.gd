@@ -1,9 +1,10 @@
 extends Node2D
 
-var color = "black"
-var type = "pawn"
-var texture = "black_pawn.png"
-var board_position = Vector2(0, 0) # current postition on board (column, row)
+var color := "black"
+var type := "pawn"
+var texture := "black_pawn.png"
+var board_position := Vector2(0, 0) # current postition on board (column, row)
+var was_moved := false
 
 func _ready():
 	pass
@@ -12,7 +13,7 @@ func _ready():
 func updatePieceData(piece_data):
 	color = piece_data.color
 	type = piece_data.type
-	texture = piece_data.texture	
+	texture = piece_data.texture
 
 # simple texture update, preatty useless tbh, should include it in updatePieceData()
 func updatePieceTexture():
