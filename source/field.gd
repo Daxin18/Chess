@@ -12,6 +12,7 @@ var highlighted := false # simple bool to check if field is highlighted (redunda
 var highlight_type := 100 # determines the type of a highlight, based on indexes in HighlightTextures
 var id := 0; # id of a field on the board (redundant, but its easier to access it directly rather than calculating it)
 var board # board in which the field exists
+var attacked := false
  
 func _ready():
 	highlighted = false
@@ -31,12 +32,6 @@ func highlight(idx):
 	board.highlights.append(self)
 	texture = HighlightTextures[idx]
 	highlight_type = idx
-
-# makes the highlight red
-func changeHighlightToAttack():
-	highlighted = true
-	texture = HighlightTextures[2]
-	highlight_type = 2
 
 # makes the fild not highlighted
 func offHighlight():

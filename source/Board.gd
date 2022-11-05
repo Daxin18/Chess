@@ -12,7 +12,7 @@ onready var board_fields = $GridContainer # you can access all the fields by cal
 # a table where index corresponds to id of a field, good if we want to reduce looping through all the fields
 export var field_table := [] #array of all the fields on the board (by ID)
 var holding_piece = null # piece being held at the moment
-var turn = "white"
+var turn := "white"
 
 func _ready():
 	generate_fields()
@@ -42,6 +42,7 @@ func fields_available_for_piece(piece):
 	pawn_check(dict, piece)
 	check_collision_followup(dict, piece)
 	castling(dict, piece)
+	#king_check(dict, piece) # TODO: checks if the field is flagged when moving as a king
 	return dict
 
 # highlights fields for castling
@@ -135,11 +136,39 @@ func fill():
 			field.piece.updatePiecePosition(field.col_row)
 			field.add_child(field.piece)
 
-# changes the turn aka currently moving color of pieces
+# changes the turn aka currently moving color of pieces and flags the appropriate fields
 func next_turn():
 	turn = sides[int(turn == "white")]
 	# if true, it rerturns the element at index 1 (aka "black")
 	# if false, ... at index 0 (aka "white")
+	update_field_attacked_status()
+
+# updates the field status based on it being potentially attacked by other player
+
+# ==============================================
+#	Issue with dictionary duplicate keys here
+# ==============================================
+func update_field_attacked_status():
+	var enemy_color = sides[int(turn == "white")]
+	var dict :Dictionary = {}
+	for field in field_table:
+		if field.piece && field.piece.color == enemy_color:
+			if field.piece.type != "pawn":
+				dict.merge(fields_available_for_piece(field.piece), true)
+			elif enemy_color == "white":
+				if field.piece.board_position[0] != 7:
+					dict[field.piece.getID() - 7] = 2
+				if field.piece.board_position[0] != 0:
+					dict[field.piece.getID() - 9] = 2
+			else:
+				if field.piece.board_position[0] != 0:
+					dict[field.piece.getID() + 7] = 2
+				if field.piece.board_position[0] != 7:
+					dict[field.piece.getID() + 9] = 2
+	for field in field_table:
+		field.attacked = dict.keys().has(field.id)
+	#print(enemy_color + " attacks:")
+	#print(dict)
 
 # this is function connected to all the fields, it basically detects clicks
 # and acts accordingly
