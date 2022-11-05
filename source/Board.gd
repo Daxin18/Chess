@@ -5,11 +5,14 @@ const FieldScene = preload("res://scenes/Field.tscn") # needed to make instances
 const ChessPiece = preload("res://scenes/ChessPiece.tscn") # needed to fill the fields with pieces
 # needed to determine the texture of a field with smart math instead of typing it myself
 const FieldTextures = ["res://textures/black_field.png","res://textures/white_field.png"]
+const sides = ["white", "black"]
+
 export var highlights := [] # all the highlighted fields are stored there, for ease of un-highlighting them
 onready var board_fields = $GridContainer # you can access all the fields by calling .get_children
 # a table where index corresponds to id of a field, good if we want to reduce looping through all the fields
 export var field_table := [] #array of all the fields on the board (by ID)
 var holding_piece = null # piece being held at the moment
+var turn = "white"
 
 func _ready():
 	generate_fields()
@@ -132,6 +135,12 @@ func fill():
 			field.piece.updatePiecePosition(field.col_row)
 			field.add_child(field.piece)
 
+# changes the turn aka currently moving color of pieces
+func next_turn():
+	turn = sides[int(turn == "white")]
+	# if true, it rerturns the element at index 1 (aka "black")
+	# if false, ... at index 0 (aka "white")
+
 # this is function connected to all the fields, it basically detects clicks
 # and acts accordingly
 func field_gui_input(event: InputEvent, field: FieldClass):
@@ -150,9 +159,11 @@ func field_gui_input(event: InputEvent, field: FieldClass):
 				else:	#piece placed into illegal field
 					snap_back()
 			elif field.piece:
-				pickup_piece(field)
+				if field.piece.color == turn:
+					pickup_piece(field)
 
-#moves the king (holding_piece) to specified field and moves rook to the field next to it
+# moves the king (holding_piece) to specified field and moves rook to the field next to it
+# moves game to the next turn
 func castle(field):
 	#move rook
 	if field.id > holding_piece.getID():
@@ -171,6 +182,7 @@ func castle(field):
 	place_piece(field)
 
 # deletes the piece from a specified field and places holding_piece in its place
+# moves game to the next turn
 func kill_piece(field):
 	field.remove_child(field.piece)
 	field.piece.queue_free()
@@ -180,6 +192,7 @@ func kill_piece(field):
 	remove_child(holding_piece)
 	holding_piece = null
 	off_highlights()
+	next_turn()
 
 # snaps the piece back to its board_position
 func snap_back():
@@ -189,10 +202,12 @@ func snap_back():
 	off_highlights()
 
 # places the piece into specified field
+# moves game to the next turn
 func place_piece(field):
 	field.putIntoField(holding_piece)
 	if field.highlight_type != 1:
 		holding_piece.was_moved = true
+		next_turn()
 	holding_piece = null
 	off_highlights()
 
