@@ -21,29 +21,38 @@ func _ready():
 
 # highlights all fields that can be visited by holding_piece
 func highlight_fields():
-	var available_fields = holding_piece.availableFields()
+	var highlight_data = fields_available_for_piece(holding_piece)
+	for idx in highlight_data.keys():
+		field_table[idx].highlight(highlight_data[idx])
+
+# returns the dictionary of fields that the given piece can move to
+# in a format of "field_id : highlight_type"
+func fields_available_for_piece(piece):
+	var dict : Dictionary = {}
+	var available_fields = piece.availableFields()
 	for field in board_fields.get_children():
 		if available_fields.has(field.col_row):
-			field.highlight(0)
-		if field.col_row == holding_piece.board_position:
-			field.highlight(1)
-	check_collisions()
-	pawn_check()
-	check_collision_followup()
-	castling()
+			dict[field.id] = 0
+		if field.col_row == piece.board_position:
+			dict[field.id] = 1
+	check_collisions(dict, piece)
+	pawn_check(dict, piece)
+	check_collision_followup(dict, piece)
+	castling(dict, piece)
+	return dict
 
 # highlights fields for castling
-func castling():
-	if holding_piece.type == "king" && !holding_piece.was_moved:
-		var rook_fields = get_fields_containing("rook", holding_piece.color)
-		var king_id = holding_piece.getID()
+func castling(dict : Dictionary, piece):
+	if piece.type == "king" && !piece.was_moved:
+		var rook_fields = get_fields_containing("rook", piece.color)
+		var king_id = piece.getID()
 		for i in rook_fields:
 			var field = field_table[i]
 			if !field.piece.was_moved && field.checkCastlingForObstructions(king_id):
 				if king_id < field.id:
-					field_table[king_id + 2].highlight(3)
+					dict[king_id + 2] = 3
 				else:
-					field_table[king_id - 2].highlight(3)
+					dict[king_id - 2] = 3
 
 # returns the array containing id of all the fields that has the specified piece on them
 func get_fields_containing(piece_type, piece_color):
@@ -62,41 +71,45 @@ func off_highlights():
 
 # un-highlights all the fields occupied by the same color pieces
 # changes highlight to red for all the opposing pieces
-func check_collisions():
-	for field in highlights:
+func check_collisions(dict : Dictionary, piece):
+	for idx in dict.keys():
+		var field = field_table[idx]
 		if field.piece != null:
-			if field.piece.color != holding_piece.color:
-				field.changeHighlightToAttack()
+			if field.piece.color != piece.color:
+				dict[field.id] = 2
 			else:
-				field.offHighlight()
+				dict.erase(idx)
 
 # special function for pawns, cause their movement and attack patterns are different
 # i hate pawns
 # they are the only pieces that require separate logic for that
 # damn, it's 2am and I decided it's perfect time to finally add some comments in the code
-func pawn_check():
-	var id = holding_piece.getID()
-	if holding_piece.type == "pawn":
-		if holding_piece.color == "white":
-			for field in highlights:
-				if (field.id == id-8 or field.id == id-16) and field.highlight_type == 2:
-					field.offHighlight()
-				elif (field.id == id-9 or field.id == id-7) and field.highlight_type == 0:
-					field.offHighlight()
+func pawn_check(dict : Dictionary, piece):
+	var id = piece.getID()
+	if piece.type == "pawn":
+		if piece.color == "white":
+			for idx in dict.keys():
+				var field = field_table[idx]
+				if (field.id == id-8 or field.id == id-16) and dict[idx] == 2:
+					dict.erase(idx)
+				elif (field.id == id-9 or field.id == id-7) and dict[idx] == 0:
+					dict.erase(idx)
 		else:
-			for field in highlights:
-				if (field.id == id+8 or field.id == id+16) and field.highlight_type == 2:
-					field.offHighlight()
-				elif (field.id == id+9 or field.id == id+7) and field.highlight_type == 0:
-					field.offHighlight()
+			for idx in dict.keys():
+				var field = field_table[idx]
+				if (field.id == id+8 or field.id == id+16) and dict[idx] == 2:
+					dict.erase(idx)
+				elif (field.id == id+9 or field.id == id+7) and dict[idx] == 0:
+					dict.erase(idx)
 
 # un-highlights the fields, that are blocked from current position by other pieces
-func check_collision_followup():
-	var starting_point = holding_piece.board_position
-	if holding_piece.type != "knight":
-		for field in highlights:
-			if !field.isConnectedTo(starting_point):
-				field.offHighlight()
+func check_collision_followup(dict : Dictionary, piece):
+	var starting_point = piece.board_position
+	if piece.type != "knight":
+		for idx in dict.keys():
+			var field = field_table[idx]
+			if !field.isConnectedTo(starting_point, dict):
+				dict.erase(idx)
 
 # generates all the fields giving them proper indexes, textures and connecting them to the board
 func generate_fields(): 
