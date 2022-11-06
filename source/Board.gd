@@ -21,6 +21,8 @@ func _ready():
 	fill()
 	for field in board_fields.get_children():
 		field.connect("gui_input", self, "field_gui_input", [field])
+	
+	update_field_attacked_status()
 
 # highlights all fields that can be visited by holding_piece
 func highlight_fields():
@@ -33,21 +35,26 @@ func highlight_fields():
 func fields_available_for_piece(piece):
 	var dict : Dictionary = {}
 	var available_fields = piece.availableFields()
-	for field in board_fields.get_children():
-		if available_fields.has(field.col_row):
-			dict[field.id] = 0
-		if field.col_row == piece.board_position:
-			dict[field.id] = 1
+	for col_row in available_fields:
+		dict[int(col_row[0] + (col_row[1] * 8))] = 0
+	dict[piece.getID()] = 1
 	check_collisions(dict, piece)
-	pawn_check(dict, piece)
 	check_collision_followup(dict, piece)
-	castling(dict, piece)
-	#king_check(dict, piece) # TODO: checks if the field is flagged when moving as a king
+	if piece.type == "king":
+		castling(dict, piece)
+		king_check(dict)
+	pawn_check(dict, piece)
 	return dict
+
+# disables the movement towards fields that can be attacked
+func king_check(dict : Dictionary):
+	for idx in dict.keys():
+		if field_table[idx].attacked:
+			dict.erase(idx)
 
 # highlights fields for castling
 func castling(dict : Dictionary, piece):
-	if piece.type == "king" && !piece.was_moved:
+	if !piece.was_moved:
 		var rook_fields = get_fields_containing("rook", piece.color)
 		var king_id = piece.getID()
 		for i in rook_fields:
@@ -78,7 +85,7 @@ func off_highlights():
 func check_collisions(dict : Dictionary, piece):
 	for idx in dict.keys():
 		var field = field_table[idx]
-		if field.piece != null:
+		if field.piece && field.id != piece.getID():
 			if field.piece.color != piece.color:
 				dict[field.id] = 2
 			else:
@@ -109,6 +116,7 @@ func pawn_check(dict : Dictionary, piece):
 # un-highlights the fields, that are blocked from current position by other pieces
 func check_collision_followup(dict : Dictionary, piece):
 	var starting_point = piece.board_position
+	print("Piece: " + piece.type + ", position:" + str(piece.getID()))
 	if piece.type != "knight":
 		for idx in dict.keys():
 			var field = field_table[idx]
@@ -153,8 +161,8 @@ func update_field_attacked_status():
 	var dict :Dictionary = {}
 	for field in field_table:
 		if field.piece && field.piece.color == enemy_color:
-			if field.piece.type != "pawn":
-				dict.merge(fields_available_for_piece(field.piece), true)
+			if !field.piece.type == "pawn":
+				dict.merge(fields_available_for_piece(field.piece))
 			elif enemy_color == "white":
 				if field.piece.board_position[0] != 7:
 					dict[field.piece.getID() - 7] = 2
@@ -165,10 +173,9 @@ func update_field_attacked_status():
 					dict[field.piece.getID() + 7] = 2
 				if field.piece.board_position[0] != 7:
 					dict[field.piece.getID() + 9] = 2
+			#print("Post: " + str(dict))
 	for field in field_table:
-		field.attacked = dict.keys().has(field.id)
-	#print(enemy_color + " attacks:")
-	#print(dict)
+		field.attacked = dict.has(field.id)
 
 # this is function connected to all the fields, it basically detects clicks
 # and acts accordingly
@@ -218,7 +225,6 @@ func kill_piece(field):
 	field.piece = null
 	field.putIntoField(holding_piece)
 	holding_piece.was_moved = true
-	remove_child(holding_piece)
 	holding_piece = null
 	off_highlights()
 	next_turn()

@@ -25,7 +25,7 @@ func updatePiecePosition(new_pos):
 
 # calculates the ID of a current field based on position. Goood for quickly finding it
 func getID():
-	return board_position[0] + (board_position[1] * 8)
+	return int(board_position[0] + (board_position[1] * 8))
 
 # replaces pawn with a proper queen upon getting to end of a board
 func doPawnTransform():

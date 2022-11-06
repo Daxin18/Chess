@@ -24,7 +24,7 @@ func setUp(given_col_row, directory, s_board):
 	base_texture = load(directory)
 	texture = base_texture
 	board = s_board
-	id = col_row[0] + (col_row[1] * 8)
+	id = int(col_row[0] + (col_row[1] * 8))
 
 # highlights the field of a given index
 func highlight(idx):
@@ -70,7 +70,7 @@ func movePieceTo(f_id):
 
 # checks weather given field is connected to the current field with highlights that are not red
 # after the rework it is based on highlight data provided by the given dictionary
-func isConnectedTo(d_col_row, dict: Dictionary):
+func isConnectedTo(d_col_row: Vector2, dict: Dictionary):
 	var result = true
 	var curr_field = null
 	# ---------------------- same column -----------------------------
@@ -79,13 +79,13 @@ func isConnectedTo(d_col_row, dict: Dictionary):
 		if row_diff < 0: # going down on the board
 			for i in range(abs(row_diff)):
 				curr_field = id + (8*(i+1))
-				if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+				if !dict.has(curr_field) or dict[curr_field] == 2:
 					result = false
 					break
 		else:	# going up on the board
 			for i in range(abs(row_diff)):
 				curr_field = id - (8*(i+1))
-				if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+				if !dict.has(curr_field) or dict[curr_field] == 2:
 					result = false
 					break
 	# ---------------------- same row -----------------------------
@@ -94,13 +94,13 @@ func isConnectedTo(d_col_row, dict: Dictionary):
 		if col_diff < 0: # going right on the board
 			for i in range(abs(col_diff)):
 				curr_field = id + (i+1)
-				if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+				if !dict.has(curr_field) or dict[curr_field] == 2:
 					result = false
 					break
 		else: # going left on the board
 			for i in range(abs(col_diff)):
 				curr_field = id - (i+1)
-				if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+				if !dict.has(curr_field) or dict[curr_field] == 2:
 					result = false
 					break
 	else:
@@ -111,26 +111,26 @@ func isConnectedTo(d_col_row, dict: Dictionary):
 			if d_col_row[1] < col_row[1]: #left-up
 				for i in range(abs(diff)):
 					curr_field = id - (9*(i+1))
-					if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+					if !dict.has(curr_field) or dict[curr_field] == 2:
 						result = false
 						break
 			else: #left-down
 				for i in range(abs(diff)):
 					curr_field = id + (7*(i+1))
-					if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+					if !dict.has(curr_field) or dict[curr_field] == 2:
 						result = false
 						break
 		else: #right
 			if d_col_row[1] < col_row[1]: #right-up
 				for i in range(abs(diff)):
 					curr_field = id - (7*(i+1))
-					if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+					if !dict.has(curr_field) or dict[curr_field] == 2:
 						result = false
 						break
 			else: #right-down
 				for i in range(abs(diff)):
 					curr_field = id + (9*(i+1))
-					if !dict.keys().has(curr_field) or dict[curr_field] == 2:
+					if !dict.has(curr_field) or dict[curr_field] == 2:
 						result = false
 						break
 	return result
