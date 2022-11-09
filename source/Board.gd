@@ -250,6 +250,8 @@ func place_piece(field):
 func pickup_piece(field):
 	holding_piece = field.piece
 	field.pickFromField()
+	if holding_piece.type == "king":
+		update_field_attacked_status()
 	holding_piece.global_position = get_global_mouse_position() - Vector2(8,8)
 	highlight_fields()
 
